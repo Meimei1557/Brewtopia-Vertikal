@@ -295,18 +295,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       backgroundColor: Colors.black,
       body: LayoutBuilder(builder: (context, constraints) {
         final landscape = constraints.maxWidth > constraints.maxHeight;
-        final scene = landscape
-            ? Center(
-                child: RotatedBox(
-                  quarterTurns: 1,
-                  child: SizedBox(
-                    width: constraints.maxHeight,
-                    height: constraints.maxWidth,
-                    child: CafeScene(vm: _vm, onOvenTap: _openOven, onJukeboxTap: _jukebox),
-                  ),
-                ),
-              )
-            : CafeScene(vm: _vm, onOvenTap: _openOven, onJukeboxTap: _jukebox);
+        final scene = CafeScene(
+          vm: _vm,
+          onOvenTap: _openOven,
+          onJukeboxTap: _jukebox,
+        );
         return Stack(children: [
           Positioned.fill(child: scene),
           SafeArea(
