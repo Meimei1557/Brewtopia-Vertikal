@@ -46,6 +46,7 @@ flutter:
   assets:
     - assets/images/
     - assets/scene/
+    - assets/scene/mockup/
     - assets/people/
     - assets/sfx/
     - assets/audio/
