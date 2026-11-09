@@ -85,7 +85,7 @@ class MockupLandscapeScene extends StatelessWidget {
       final p = positions[i];
       out.add(Positioned(left: p.dx - h * .19, top: p.dy - h * .20,
         width: h * .38, height: h * .22,
-        child: Image.asset('assets/scene/mockup/\${names[i]}', fit: BoxFit.contain)));
+        child: Image.asset('assets/scene/mockup/${names[i]}', fit: BoxFit.contain)));
     }
     return out;
   }
@@ -102,7 +102,7 @@ class MockupLandscapeScene extends StatelessWidget {
       final y = h * (.58 + (index % 2) * .055);
       final size = h * .34;
       out.add(Positioned(left: x, top: y - size, width: size * .52, height: size,
-        child: Image.asset('assets/scene/mockup/\${sprites[c.variant % sprites.length]}', fit: BoxFit.contain)));
+        child: Image.asset('assets/scene/mockup/${sprites[c.variant % sprites.length]}', fit: BoxFit.contain)));
       index++;
     }
     return out;
