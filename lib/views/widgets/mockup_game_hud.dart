@@ -25,7 +25,7 @@ class _MockupTopBarState extends State<MockupTopBar> {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: Row(children: [
         pill(Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          Text('Lv \${vm.level}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
+          Text('Lv ${vm.level}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
           const SizedBox(height: 3),
           SizedBox(width: 85, child: ClipRRect(borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(value: vm.xpTarget == 0 ? 0 : (vm.xp / vm.xpTarget).clamp(0.0, 1.0),
@@ -35,7 +35,7 @@ class _MockupTopBarState extends State<MockupTopBar> {
         pill(Row(mainAxisSize: MainAxisSize.min, children: [
           const Icon(Icons.monetization_on, color: Color(0xFFFFC52E), size: 22),
           const SizedBox(width: 6),
-          Text('\${vm.money}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+          Text('${vm.money}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
           const SizedBox(width: 8), const Icon(Icons.add_circle, color: Color(0xFFFFB04A), size: 22),
         ])),
         const SizedBox(width: 8),
@@ -43,7 +43,7 @@ class _MockupTopBarState extends State<MockupTopBar> {
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Icon(Icons.access_time_filled, color: Color(0xFFFFE6C6), size: 20),
             const SizedBox(width: 8),
-            Text(vm.phase == DayPhase.open ? 'Hari \${vm.day} • \${vm.dayLeft.ceil()}s' : 'Hari \${vm.day} • Tutup',
+            Text(vm.phase == DayPhase.open ? 'Hari ${vm.day} • ${vm.dayLeft.ceil()}s' : 'Hari ${vm.day} • Tutup',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14)),
           ])))),
         const SizedBox(width: 8),
@@ -91,7 +91,7 @@ class MockupBottomBar extends StatelessWidget {
             child: SizedBox(width: 82, height: 76,
               child: Material(color: Colors.transparent,
                 child: InkWell(onTap: item.$2, borderRadius: BorderRadius.circular(15),
-                  child: Image.asset('assets/scene/mockup/\${item.$1}', fit: BoxFit.contain)))),
+                  child: Image.asset('assets/scene/mockup/${item.$1}', fit: BoxFit.contain)))),
       ]),
     );
   }
