@@ -9,6 +9,7 @@ import '../../data/models/decor.dart';
 import '../../data/models/product.dart';
 import '../../viewmodels/gameplay_view_model.dart';
 import 'product_icon.dart';
+import 'mockup_landscape_scene.dart';
 import 'walking_sprite.dart';
 
 /// Pemetaan koordinat scene (600 x 1300) ke layar.
@@ -273,62 +274,11 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
   /// Komposisi khusus layar lebar: ruang kafe digambar ulang dalam koordinat
   /// landscape, bukan memutar kanvas portrait lama.
   Widget _buildLandscape(GameplayViewModel vm) {
-    final w = _size.width;
-    final h = _size.height;
-    final night = _daylight().night;
-    return AnimatedBuilder(
-      animation: vm.frame,
-      builder: (_, __) => GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapUp: (details) {
-        final p = details.localPosition;
-        if (p.dx < w * 0.18 && p.dy > h * 0.36 && p.dy < h * 0.82) {
-          widget.onOvenTap?.call();
-        } else if (vm.hasDecor(Decor.jukebox) && p.dx > w * 0.88 && p.dy > h * 0.55) {
-          widget.onJukeboxTap?.call();
-        }
-      },
-      child: Stack(clipBehavior: Clip.hardEdge, children: [
-        Positioned.fill(child: CustomPaint(painter: _LandscapeRoomPainter(vm, _ambient, night))),
-        // Pintu dan jendela di sisi kanan ruang.
-        Positioned(left: w * .865, top: h * .12, width: w * .105, height: h * .49,
-          child: Image.asset('assets/scene/door.png', fit: BoxFit.fill)),
-        // Counter horizontal dibuat oleh painter agar proporsinya sesuai layar lebar.
-        // Etalase roti.
-        ..._landscapePastries(vm, w, h),
-        // Barista berdiri di belakang area kerja, tetap tegak.
-        Positioned(left: w * .37, top: h * .075, width: h * .49, height: h * .49,
-          child: AnimatedBuilder(
-            animation: _ambient,
-            builder: (_, __) => Transform.translate(
-              offset: Offset(0, sin(_ambient.value * 2) * 2),
-              child: Image.asset(vm.baristaFemale ? 'assets/people/barista_f.png' : 'assets/people/barista_m.png',
-                fit: BoxFit.contain, filterQuality: FilterQuality.medium),
-            ),
-          )),
-        // Meja dan kursi disusun mendatar di sisi depan kafe.
-        ..._landscapeTables(vm, w, h),
-        // Pelanggan berjalan / mengantre; koordinat dunia lama dipetakan ke
-        // jalur horizontal tanpa memutar sprite karakter.
-        ..._landscapeCustomers(vm, w, h),
-        ..._landscapeOvens(vm, w, h),
-        if (vm.hasDecor(Decor.plantBig))
-          Positioned(left: w * .02, bottom: h * .015, width: h * .19, height: h * .32,
-            child: Image.asset('assets/scene/plant_big.png', fit: BoxFit.contain)),
-        if (vm.hasDecor(Decor.plantSmall))
-          Positioned(right: w * .015, bottom: h * .02, width: h * .12, height: h * .22,
-            child: Image.asset('assets/scene/plant_small.png', fit: BoxFit.contain)),
-        if (vm.hasDecor(Decor.jukebox))
-          Positioned(right: w * .025, bottom: h * .12, width: h * .19, height: h * .32,
-            child: Image.asset('assets/scene/jukebox.png', fit: BoxFit.contain)),
-        if (vm.hasDecor(Decor.neon))
-          Positioned(right: w * .20, top: h * .025, width: w * .13, height: h * .10,
-            child: Image.asset('assets/scene/neon.png', fit: BoxFit.contain)),
-        Positioned.fill(child: IgnorePointer(child: CustomPaint(
-          painter: _LandscapeAmbientPainter(vm, _ambient, night),
-        ))),
-      ]),
-    ));
+    return MockupLandscapeScene(
+      vm: vm,
+      onOvenTap: widget.onOvenTap,
+      onJukeboxTap: widget.onJukeboxTap,
+    );
   }
 
   List<Widget> _landscapePastries(GameplayViewModel vm, double w, double h) {
