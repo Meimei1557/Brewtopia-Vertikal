@@ -428,14 +428,14 @@ class _CafeSceneState extends State<CafeScene>
                 ),
               ),
             ),
+            // Produk yang tersedia ditampilkan di area counter sesuai stok.
+            ..._landscapePastries(vm, w, h),
             sprite('pastry_case', right: .015, bottom: .20, width: .115, height: .23),
             sprite('oven_fireplace', left: .70, bottom: .18, width: .12, height: .22),
             sprite('plant_cluster', left: .015, bottom: .17, width: .19, height: .13),
             sprite('plant_cluster', right: .15, top: .34, width: .14, height: .10),
-            // Kelompok meja dan kursi dari aset asli.
-            sprite('table_chair_left', left: .08, bottom: .045, width: .19, height: .22),
-            sprite('table_chair_center', left: .43, bottom: .035, width: .22, height: .22),
-            sprite('table_chair_right', right: .23, bottom: .04, width: .23, height: .22),
+            // Meja mengikuti jumlah upgrade; pelanggan duduk tetap dirender dinamis.
+            ..._landscapeTables(vm, w, h),
             ..._landscapeCustomers(vm, w, h),
             ..._landscapeOvens(vm, w, h),
             if (vm.hasDecor(Decor.jukebox))
