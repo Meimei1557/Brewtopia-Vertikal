@@ -291,11 +291,7 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
         // Pintu dan jendela di sisi kanan ruang.
         Positioned(left: w * .865, top: h * .12, width: w * .105, height: h * .49,
           child: Image.asset('assets/scene/door.png', fit: BoxFit.fill)),
-        // Area oven dan etalase di sisi kiri counter.
-        Positioned(left: w * .025, top: h * .39, width: w * .105, height: h * .34,
-          child: Image.asset('assets/scene/counter.png', fit: BoxFit.fill)),
-        Positioned(left: w * .16, top: h * .39, width: w * .39, height: h * .34,
-          child: Image.asset('assets/scene/counter.png', fit: BoxFit.fill)),
+        // Counter horizontal dibuat oleh painter agar proporsinya sesuai layar lebar.
         // Etalase roti.
         ..._landscapePastries(vm, w, h),
         // Barista berdiri di belakang area kerja, tetap tegak.
