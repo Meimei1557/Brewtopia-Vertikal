@@ -91,7 +91,7 @@ class MockupBottomBar extends StatelessWidget {
             child: SizedBox(width: 82, height: 76,
               child: Material(color: Colors.transparent,
                 child: InkWell(onTap: item.$2, borderRadius: BorderRadius.circular(15),
-                  child: Image.asset('assets/scene/mockup/${item.$1}', fit: BoxFit.contain)))),
+                  child: Image.asset('assets/scene/mockup/${item.$1}', fit: BoxFit.contain))))),
       ]),
     );
   }
