@@ -18,3 +18,4 @@ ios/Flutter/.last_build_id
 
 .DS_Store
 Thumbs.dbandroid/hs_err_pid*.log
+android/hs_err_pid*.log
