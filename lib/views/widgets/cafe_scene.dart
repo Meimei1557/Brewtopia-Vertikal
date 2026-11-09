@@ -276,7 +276,9 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     final w = _size.width;
     final h = _size.height;
     final night = _daylight().night;
-    return AnimatedBuilder(\n      animation: vm.frame,\n      builder: (_, __) => GestureDetector(
+    return AnimatedBuilder(
+      animation: vm.frame,
+      builder: (_, __) => GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapUp: (details) {
         final p = details.localPosition;
