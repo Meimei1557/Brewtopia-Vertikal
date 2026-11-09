@@ -350,7 +350,10 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     final spots = [(.64, .70), (.80, .70), (.72, .88), (.91, .84), (.56, .88), (.96, .66)];
     for (var i = 0; i < vm.tableCount && i < spots.length; i++) {
       final (x, y) = spots[i];
-      final sitter = vm.customers.where((c) => c.tableIndex == i && c.state == CustState.seated).firstOrNull;
+      Customer? sitter;
+      for (final customer in vm.customers) {
+        if (customer.tableIndex == i && customer.state == CustState.seated) sitter = customer;
+      }
       out.add(Positioned(left: w * x - h * .10, top: h * y - h * .27, width: h * .20, height: h * .27,
         child: Image.asset('assets/scene/chair.png', fit: BoxFit.contain)));
       if (sitter != null) {
