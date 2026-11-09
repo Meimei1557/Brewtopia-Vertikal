@@ -14,8 +14,8 @@ import 'walking_sprite.dart';
 /// Pemetaan koordinat scene (600 x 1300) ke layar.
 class Stage {
   Stage(Size size)
-      : s = max(size.width / w, size.height / 1260),
-        ox = (size.width - w * max(size.width / w, size.height / 1260)) / 2;
+    : s = max(size.width / w, size.height / 1260),
+      ox = (size.width - w * max(size.width / w, size.height / 1260)) / 2;
   static const double w = 600;
   static const double h = 1300;
   final double s;
@@ -27,7 +27,8 @@ class Stage {
 }
 
 /// Skala perspektif: makin ke bawah (dekat kamera) makin besar.
-double perspScale(double y) => (0.62 + (y - 560) / 520 * 0.52).clamp(0.55, 1.25).toDouble();
+double perspScale(double y) =>
+    (0.62 + (y - 560) / 520 * 0.52).clamp(0.55, 1.25).toDouble();
 
 class _Drawable {
   _Drawable(this.key, this.widget);
@@ -40,7 +41,12 @@ class _Drawable {
 /// - efek ambient (langit, lampu, debu) digambar dengan laju lebih rendah,
 /// - hanya objek bergerak (pelanggan, barista, balon) yang dibangun ulang tiap frame.
 class CafeScene extends StatefulWidget {
-  const CafeScene({super.key, required this.vm, this.onOvenTap, this.onJukeboxTap});
+  const CafeScene({
+    super.key,
+    required this.vm,
+    this.onOvenTap,
+    this.onJukeboxTap,
+  });
   final GameplayViewModel vm;
   final VoidCallback? onOvenTap;
   final VoidCallback? onJukeboxTap;
@@ -49,7 +55,8 @@ class CafeScene extends StatefulWidget {
   State<CafeScene> createState() => _CafeSceneState();
 }
 
-class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMixin {
+class _CafeSceneState extends State<CafeScene>
+    with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
   Duration _last = Duration.zero;
   double _time = 0;
@@ -73,10 +80,11 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     super.initState();
     _ticker = createTicker(_onTick)..start();
     try {
-      _acc = accelerometerEventStream(samplingPeriod: SensorInterval.uiInterval).listen((e) {
-        _targetX = (e.x / 9.8).clamp(-0.5, 0.5).toDouble();
-        _targetY = ((e.y / 9.8) - 0.8).clamp(-0.5, 0.5).toDouble();
-      }, onError: (_) {});
+      _acc = accelerometerEventStream(samplingPeriod: SensorInterval.uiInterval)
+          .listen((e) {
+            _targetX = (e.x / 9.8).clamp(-0.5, 0.5).toDouble();
+            _targetY = ((e.y / 9.8) - 0.8).clamp(-0.5, 0.5).toDouble();
+          }, onError: (_) {});
     } catch (_) {}
   }
 
@@ -86,9 +94,21 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     if (_precached) return;
     _precached = true;
     for (final f in [
-      'scene/wall', 'scene/counter', 'scene/door', 'scene/table_0', 'scene/table_1', 'scene/table_2',
-      'scene/chair', 'scene/bin', 'people/barista_m', 'people/barista_f',
-      for (var i = 0; i < 8; i++) ...['people/c${i}_body', 'people/c${i}_legL', 'people/c${i}_legR'],
+      'scene/wall',
+      'scene/counter',
+      'scene/door',
+      'scene/table_0',
+      'scene/table_1',
+      'scene/table_2',
+      'scene/chair',
+      'scene/bin',
+      'people/barista_m',
+      'people/barista_f',
+      for (var i = 0; i < 8; i++) ...[
+        'people/c${i}_body',
+        'people/c${i}_legL',
+        'people/c${i}_legR',
+      ],
       for (final p in Product.values) 'icons/${p.name}',
     ]) {
       precacheImage(AssetImage('assets/$f.png'), context);
@@ -96,7 +116,9 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
   }
 
   void _onTick(Duration elapsed) {
-    final dt = ((elapsed - _last).inMicroseconds / 1e6).clamp(0.0, 0.05).toDouble();
+    final dt = ((elapsed - _last).inMicroseconds / 1e6)
+        .clamp(0.0, 0.05)
+        .toDouble();
     _last = elapsed;
     _time += dt;
     final f = min(1.0, dt * 5);
@@ -114,7 +136,9 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     final before = _baristaX;
     _baristaX += (goal - _baristaX) * min(1.0, dt * 4);
     _baristaLean = ((_baristaX - before) * 0.9).clamp(-0.06, 0.06).toDouble();
-    widget.vm.tick(dt); // memanggil frame.tick() -> hanya layer dinamis dibangun ulang
+    widget.vm.tick(
+      dt,
+    ); // memanggil frame.tick() -> hanya layer dinamis dibangun ulang
   }
 
   @override
@@ -134,7 +158,11 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     final ux = st.toX(p.dx), uy = st.toY(p.dy);
     if (ux >= 8 && ux <= 140 && uy >= 280 && uy <= 450) {
       widget.onOvenTap?.call();
-    } else if (widget.vm.hasDecor(Decor.jukebox) && ux >= 510 && ux <= 600 && uy >= 620 && uy <= 790) {
+    } else if (widget.vm.hasDecor(Decor.jukebox) &&
+        ux >= 510 &&
+        ux <= 600 &&
+        uy >= 620 &&
+        uy <= 790) {
       widget.onJukeboxTap?.call();
     }
   }
@@ -148,127 +176,200 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     final h = _hour;
     if (h >= 5 && h < 7.5) return (tint: const Color(0x26FF9A4D), night: 0.3);
     if (h >= 7.5 && h < 16) return (tint: const Color(0x00000000), night: 0.0);
-    if (h >= 16 && h < 18.5) return (tint: const Color(0x2EFF7A3D), night: 0.25);
+    if (h >= 16 && h < 18.5)
+      return (tint: const Color(0x2EFF7A3D), night: 0.25);
     if (h >= 18.5 && h < 20) return (tint: const Color(0x483A2A7C), night: 0.7);
     return (tint: const Color(0x5E0E1C3E), night: 1.0);
   }
 
   // ---------- helper layer ----------
   Widget _static(double depth, Widget child) => Positioned.fill(
-        child: ValueListenableBuilder<Offset>(
-          valueListenable: _tilt,
-          child: RepaintBoundary(child: child),
-          builder: (_, t, c) => Transform.translate(offset: Offset(-t.dx * 20 * depth, -t.dy * 12 * depth), child: c),
-        ),
-      );
+    child: ValueListenableBuilder<Offset>(
+      valueListenable: _tilt,
+      child: RepaintBoundary(child: child),
+      builder: (_, t, c) => Transform.translate(
+        offset: Offset(-t.dx * 20 * depth, -t.dy * 12 * depth),
+        child: c,
+      ),
+    ),
+  );
 
   Widget _dyn(double depth, List<Widget> Function() build) => Positioned.fill(
-        child: AnimatedBuilder(
-          animation: widget.vm.frame,
-          builder: (_, __) {
-            final t = _tilt.value;
-            return Transform.translate(
-              offset: Offset(-t.dx * 20 * depth, -t.dy * 12 * depth),
-              child: Stack(clipBehavior: Clip.none, children: build()),
-            );
-          },
-        ),
-      );
+    child: AnimatedBuilder(
+      animation: widget.vm.frame,
+      builder: (_, __) {
+        final t = _tilt.value;
+        return Transform.translate(
+          offset: Offset(-t.dx * 20 * depth, -t.dy * 12 * depth),
+          child: Stack(clipBehavior: Clip.none, children: build()),
+        );
+      },
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, box) {
-      _size = box.biggest;
-      final vm = widget.vm;
-      if (_size.width > _size.height) return _buildLandscape(vm);
-      final st = Stage(_size);
-      final wallRect = Rect.fromLTWH(st.ox, 0, Stage.w * st.s, Stage.h * st.s);
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapUp: _onTap,
-        child: ClipRect(
-          child: Transform.scale(
-            scale: 1.04,
-            child: Stack(clipBehavior: Clip.none, children: [
-              const Positioned.fill(child: ColoredBox(color: Color(0xFFB98650))),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: RepaintBoundary(child: CustomPaint(painter: _SkyPainter(st, vm, _ambient))),
-                ),
-              ),
-              // dinding + dekor belakang (statis, hanya digeser)
-              _static(
-                0.5,
-                ListenableBuilder(
-                  listenable: vm,
-                  builder: (_, __) => Stack(clipBehavior: Clip.none, children: [
-                    Positioned.fromRect(
-                      rect: wallRect,
-                      child: Image.asset('assets/scene/wall.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
-                    ),
-                    ..._backDecor(st),
-                    Positioned.fill(child: IgnorePointer(child: CustomPaint(painter: _LightsPainter(st, vm, _ambient)))),
-                  ]),
-                ),
-              ),
-              _dyn(0.5, () => [_door(st)]),
-              _dyn(1.0, () => [_barista(st)]),
-              _static(
-                1.0,
-                Stack(clipBehavior: Clip.none, children: [
-                  Positioned.fromRect(
-                    rect: wallRect,
-                    child: Image.asset('assets/scene/counter.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
+    return LayoutBuilder(
+      builder: (context, box) {
+        _size = box.biggest;
+        final vm = widget.vm;
+        if (_size.width > _size.height) return _buildLandscape(vm);
+        final st = Stage(_size);
+        final wallRect = Rect.fromLTWH(
+          st.ox,
+          0,
+          Stage.w * st.s,
+          Stage.h * st.s,
+        );
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: _onTap,
+          child: ClipRect(
+            child: Transform.scale(
+              scale: 1.04,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Positioned.fill(
+                    child: ColoredBox(color: Color(0xFFB98650)),
                   ),
-                ]),
-              ),
-              _dyn(1.0, () => [
-                    ..._displayPastries(st),
-                    ..._ovenHud(st),
-                    ..._floorObjects(st),
-                    ..._bubbles(st),
-                    ..._flyers(st),
-                    ..._floaters(st),
-                  ]),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: Stack(children: [
-                    Positioned.fill(child: RepaintBoundary(child: CustomPaint(painter: _FxPainter(st, vm, _ambient)))),
-                    Positioned.fill(
-                      child: ValueListenableBuilder<double>(
-                        valueListenable: _ambient,
-                        builder: (_, __, ___) {
-                          final l = _daylight();
-                          final night = (l.night + (vm.raining ? 0.25 : 0.0)).clamp(0.0, 1.0).toDouble();
-                          return Stack(children: [
-                            Positioned.fill(child: ColoredBox(color: l.tint)),
-                            Positioned.fill(child: CustomPaint(painter: _GlowPainter(st, night, vm.hasDecor(Decor.neon), vm.hasDecor(Decor.pendantLamps)))),
-                          ]);
-                        },
-                      ),
-                    ),
-                    Positioned.fill(child: CustomPaint(painter: _MotePainter(_motes, st, _ambient))),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            radius: 1.1,
-                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.33)],
-                            stops: const [0.62, 1],
-                          ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: RepaintBoundary(
+                        child: CustomPaint(
+                          painter: _SkyPainter(st, vm, _ambient),
                         ),
                       ),
                     ),
-                  ]),
-                ),
+                  ),
+                  // dinding + dekor belakang (statis, hanya digeser)
+                  _static(
+                    0.5,
+                    ListenableBuilder(
+                      listenable: vm,
+                      builder: (_, __) => Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned.fromRect(
+                            rect: wallRect,
+                            child: Image.asset(
+                              'assets/scene/wall.png',
+                              fit: BoxFit.fill,
+                              filterQuality: FilterQuality.low,
+                            ),
+                          ),
+                          ..._backDecor(st),
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: CustomPaint(
+                                painter: _LightsPainter(st, vm, _ambient),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _dyn(0.5, () => [_door(st)]),
+                  _dyn(1.0, () => [_barista(st)]),
+                  _static(
+                    1.0,
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned.fromRect(
+                          rect: wallRect,
+                          child: Image.asset(
+                            'assets/scene/counter.png',
+                            fit: BoxFit.fill,
+                            filterQuality: FilterQuality.low,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _dyn(
+                    1.0,
+                    () => [
+                      ..._displayPastries(st),
+                      ..._ovenHud(st),
+                      ..._floorObjects(st),
+                      ..._bubbles(st),
+                      ..._flyers(st),
+                      ..._floaters(st),
+                    ],
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: RepaintBoundary(
+                              child: CustomPaint(
+                                painter: _FxPainter(st, vm, _ambient),
+                              ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: ValueListenableBuilder<double>(
+                              valueListenable: _ambient,
+                              builder: (_, __, ___) {
+                                final l = _daylight();
+                                final night =
+                                    (l.night + (vm.raining ? 0.25 : 0.0))
+                                        .clamp(0.0, 1.0)
+                                        .toDouble();
+                                return Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: ColoredBox(color: l.tint),
+                                    ),
+                                    Positioned.fill(
+                                      child: CustomPaint(
+                                        painter: _GlowPainter(
+                                          st,
+                                          night,
+                                          vm.hasDecor(Decor.neon),
+                                          vm.hasDecor(Decor.pendantLamps),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: _MotePainter(_motes, st, _ambient),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  radius: 1.1,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.33),
+                                  ],
+                                  stops: const [0.62, 1],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ]),
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
-
 
   /// Komposisi khusus layar lebar: ruang kafe digambar ulang dalam koordinat
   /// landscape, bukan memutar kanvas portrait lama.
@@ -276,94 +377,169 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     final w = _size.width;
     final h = _size.height;
     final night = _daylight().night;
+    Widget sprite(String name, {double? left, double? right, double? top,
+      double? bottom, required double width, required double height,
+      BoxFit fit = BoxFit.contain}) => Positioned(
+        left: left == null ? null : w * left,
+        right: right == null ? null : w * right,
+        top: top == null ? null : h * top,
+        bottom: bottom == null ? null : h * bottom,
+        width: w * width,
+        height: h * height,
+        child: Image.asset('assets/scene/mockup/$name.png', fit: fit),
+      );
+
     return AnimatedBuilder(
       animation: vm.frame,
       builder: (_, __) => GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapUp: (details) {
-        final p = details.localPosition;
-        if (p.dx < w * 0.18 && p.dy > h * 0.36 && p.dy < h * 0.82) {
-          widget.onOvenTap?.call();
-        } else if (vm.hasDecor(Decor.jukebox) && p.dx > w * 0.88 && p.dy > h * 0.55) {
-          widget.onJukeboxTap?.call();
-        }
-      },
-      child: Stack(clipBehavior: Clip.hardEdge, children: [
-        Positioned.fill(child: CustomPaint(painter: _LandscapeRoomPainter(vm, _ambient, night))),
-        // Pintu dan jendela di sisi kanan ruang.
-        Positioned(left: w * .865, top: h * .12, width: w * .105, height: h * .49,
-          child: Image.asset('assets/scene/door.png', fit: BoxFit.fill)),
-        // Counter horizontal dibuat oleh painter agar proporsinya sesuai layar lebar.
-        // Etalase roti.
-        ..._landscapePastries(vm, w, h),
-        // Barista berdiri di belakang area kerja, tetap tegak.
-        Positioned(left: w * .37, top: h * .075, width: h * .49, height: h * .49,
-          child: AnimatedBuilder(
-            animation: _ambient,
-            builder: (_, __) => Transform.translate(
-              offset: Offset(0, sin(_ambient.value * 2) * 2),
-              child: Image.asset(vm.baristaFemale ? 'assets/people/barista_f.png' : 'assets/people/barista_m.png',
-                fit: BoxFit.contain, filterQuality: FilterQuality.medium),
+        behavior: HitTestBehavior.opaque,
+        onTapUp: (details) {
+          final p = details.localPosition;
+          if (p.dx < w * .19 && p.dy > h * .43 && p.dy < h * .86) {
+            widget.onOvenTap?.call();
+          } else if (vm.hasDecor(Decor.jukebox) && p.dx > w * .88 && p.dy > h * .55) {
+            widget.onJukeboxTap?.call();
+          }
+        },
+        child: Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            Positioned.fill(child: CustomPaint(
+              painter: _LandscapeRoomPainter(vm, _ambient, night),
+            )),
+            // Elemen dinding mengikuti mockup: menu di tengah, pintu di kanan.
+            sprite('menu_board', left: .39, top: .105, width: .23, height: .29),
+            sprite('door_open', right: .035, top: .13, width: .105, height: .49),
+            sprite('shelf_coffee', right: .025, top: .39, width: .105, height: .34),
+            // Counter adalah aset utuh yang sudah berisi mesin kopi, monitor,
+            // tanaman, dan dekor meja kerja sesuai asset sheet.
+            sprite('counter', left: .13, top: .43, width: .47, height: .34),
+            // Barista berada di belakang counter, tidak menutupi area kerja.
+            Positioned(
+              left: w * .475, top: h * .275, width: h * .30, height: h * .34,
+              child: AnimatedBuilder(
+                animation: _ambient,
+                builder: (_, __) => Transform.translate(
+                  offset: Offset(0, sin(_ambient.value * 2) * 1.8),
+                  child: Image.asset(
+                    'assets/scene/mockup/character_female_barista.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
             ),
-          )),
-        // Meja dan kursi disusun mendatar di sisi depan kafe.
-        ..._landscapeTables(vm, w, h),
-        // Pelanggan berjalan / mengantre; koordinat dunia lama dipetakan ke
-        // jalur horizontal tanpa memutar sprite karakter.
-        ..._landscapeCustomers(vm, w, h),
-        ..._landscapeOvens(vm, w, h),
-        if (vm.hasDecor(Decor.plantBig))
-          Positioned(left: w * .02, bottom: h * .015, width: h * .19, height: h * .32,
-            child: Image.asset('assets/scene/plant_big.png', fit: BoxFit.contain)),
-        if (vm.hasDecor(Decor.plantSmall))
-          Positioned(right: w * .015, bottom: h * .02, width: h * .12, height: h * .22,
-            child: Image.asset('assets/scene/plant_small.png', fit: BoxFit.contain)),
-        if (vm.hasDecor(Decor.jukebox))
-          Positioned(right: w * .025, bottom: h * .12, width: h * .19, height: h * .32,
-            child: Image.asset('assets/scene/jukebox.png', fit: BoxFit.contain)),
-        if (vm.hasDecor(Decor.neon))
-          Positioned(right: w * .20, top: h * .025, width: w * .13, height: h * .10,
-            child: Image.asset('assets/scene/neon.png', fit: BoxFit.contain)),
-        Positioned.fill(child: IgnorePointer(child: CustomPaint(
-          painter: _LandscapeAmbientPainter(vm, _ambient, night),
-        ))),
-      ]),
-    ));
+            sprite('pastry_case', right: .015, bottom: .20, width: .115, height: .23),
+            sprite('oven_fireplace', left: .70, bottom: .18, width: .12, height: .22),
+            sprite('plant_cluster', left: .015, bottom: .17, width: .19, height: .13),
+            sprite('plant_cluster', right: .15, top: .34, width: .14, height: .10),
+            // Kelompok meja dan kursi dari aset asli.
+            sprite('table_chair_left', left: .08, bottom: .045, width: .19, height: .22),
+            sprite('table_chair_center', left: .43, bottom: .035, width: .22, height: .22),
+            sprite('table_chair_right', right: .23, bottom: .04, width: .23, height: .22),
+            ..._landscapeCustomers(vm, w, h),
+            ..._landscapeOvens(vm, w, h),
+            if (vm.hasDecor(Decor.jukebox))
+              Positioned(
+                right: w * .015, bottom: h * .20, width: h * .17, height: h * .29,
+                child: Image.asset('assets/scene/jukebox.png', fit: BoxFit.contain),
+              ),
+            if (vm.hasDecor(Decor.neon))
+              Positioned(
+                right: w * .19, top: h * .035, width: w * .11, height: h * .09,
+                child: Image.asset('assets/scene/neon.png', fit: BoxFit.contain),
+              ),
+            Positioned.fill(
+              child: IgnorePointer(child: CustomPaint(
+                painter: _LandscapeAmbientPainter(vm, _ambient, night),
+              )),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   List<Widget> _landscapePastries(GameplayViewModel vm, double w, double h) {
     final items = <Product>[];
     for (final p in Product.values.where((e) => e.isFood)) {
-      for (var i = 0; i < min(vm.stockOf(p), 3); i++) { items.add(p); }
+      for (var i = 0; i < min(vm.stockOf(p), 3); i++) {
+        items.add(p);
+      }
     }
     return [
       for (var i = 0; i < min(items.length, 9); i++)
-        Positioned(left: w * (.20 + (i % 5) * .058), top: h * (i < 5 ? .53 : .61),
-          child: ProductIcon(items[i], size: h * .075)),
+        Positioned(
+          left: w * (.20 + (i % 5) * .058),
+          top: h * (i < 5 ? .53 : .61),
+          child: ProductIcon(items[i], size: h * .075),
+        ),
     ];
   }
 
   List<Widget> _landscapeTables(GameplayViewModel vm, double w, double h) {
     final out = <Widget>[];
-    final spots = [(.64, .70), (.80, .70), (.72, .88), (.91, .84), (.56, .88), (.96, .66)];
+    final spots = [
+      (.64, .70),
+      (.80, .70),
+      (.72, .88),
+      (.91, .84),
+      (.56, .88),
+      (.96, .66),
+    ];
     for (var i = 0; i < vm.tableCount && i < spots.length; i++) {
       final (x, y) = spots[i];
       Customer? sitter;
       for (final customer in vm.customers) {
-        if (customer.tableIndex == i && customer.state == CustState.seated) sitter = customer;
+        if (customer.tableIndex == i && customer.state == CustState.seated)
+          sitter = customer;
       }
-      out.add(Positioned(left: w * x - h * .10, top: h * y - h * .27, width: h * .20, height: h * .27,
-        child: Image.asset('assets/scene/chair.png', fit: BoxFit.contain)));
+      out.add(
+        Positioned(
+          left: w * x - h * .10,
+          top: h * y - h * .27,
+          width: h * .20,
+          height: h * .27,
+          child: Image.asset('assets/scene/chair.png', fit: BoxFit.contain),
+        ),
+      );
       if (sitter != null) {
-        out.add(Positioned(left: w * x - h * .13, top: h * y - h * .48, width: h * .26, height: h * .26,
-          child: WalkingSprite(variant: sitter.variant, size: h * .26, time: _time + sitter.id,
-            seated: true, hop: sitter.hop, angry: sitter.angry)));
+        out.add(
+          Positioned(
+            left: w * x - h * .13,
+            top: h * y - h * .48,
+            width: h * .26,
+            height: h * .26,
+            child: WalkingSprite(
+              variant: sitter.variant,
+              size: h * .26,
+              time: _time + sitter.id,
+              seated: true,
+              hop: sitter.hop,
+              angry: sitter.angry,
+            ),
+          ),
+        );
       }
-      out.add(Positioned(left: w * x - h * .11, top: h * y - h * .16, width: h * .22, height: h * .16,
-        child: Image.asset('assets/scene/table_${vm.clothStyle}.png', fit: BoxFit.fill)));
+      out.add(
+        Positioned(
+          left: w * x - h * .11,
+          top: h * y - h * .16,
+          width: h * .22,
+          height: h * .16,
+          child: Image.asset(
+            'assets/scene/table_${vm.clothStyle}.png',
+            fit: BoxFit.fill,
+          ),
+        ),
+      );
       if (sitter != null && sitter.items.isNotEmpty) {
-        out.add(Positioned(left: w * x - h * .025, top: h * y - h * .20,
-          child: ProductIcon(sitter.items.first.product, size: h * .07)));
+        out.add(
+          Positioned(
+            left: w * x - h * .025,
+            top: h * y - h * .20,
+            child: ProductIcon(sitter.items.first.product, size: h * .07),
+          ),
+        );
       }
     }
     return out;
@@ -376,12 +552,32 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
       final x = w * (.53 + (c.y / Stage.h) * .39);
       final y = h * (.53 + (c.x / Stage.w) * .24);
       final size = h * .38;
-      out.add(Positioned(left: x - size / 2, top: y - size * .82, width: size, height: size,
-        child: WalkingSprite(variant: c.variant, size: size, time: _time + c.id,
-          phase: c.walkPhase, walking: c.isWalking, hop: c.hop, angry: c.angry)));
+      out.add(
+        Positioned(
+          left: x - size / 2,
+          top: y - size * .82,
+          width: size,
+          height: size,
+          child: WalkingSprite(
+            variant: c.variant,
+            size: size,
+            time: _time + c.id,
+            phase: c.walkPhase,
+            walking: c.isWalking,
+            hop: c.hop,
+            angry: c.angry,
+          ),
+        ),
+      );
       if (c.bubble != null && c.bubble!.isNotEmpty) {
-        out.add(Positioned(left: x - h * .14, top: y - size * .98, width: h * .28,
-          child: _SpeechBubble(text: c.bubble!)));
+        out.add(
+          Positioned(
+            left: x - h * .14,
+            top: y - size * .98,
+            width: h * .28,
+            child: _SpeechBubble(text: c.bubble!),
+          ),
+        );
       }
     }
     return out;
@@ -394,15 +590,40 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
       if (oven.state == OvenState.idle) continue;
       final ready = oven.state == OvenState.ready;
       final burnt = oven.state == OvenState.burnt;
-      out.add(Positioned(left: w * .025, top: h * (.40 + i * .105), width: w * .13,
-        child: Container(padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(color: ready ? Colors.green.shade700 : Colors.black87,
-            borderRadius: BorderRadius.circular(9), border: Border.all(color: Colors.white38)),
-          child: Row(children: [
-            if (oven.item != null) ProductIcon(oven.item!, size: h * .07),
-            Expanded(child: Text(burnt ? 'GOSONG' : ready ? 'SIAP!' : 'MEMANGGANG',
-              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800))),
-          ]))));
+      out.add(
+        Positioned(
+          left: w * .025,
+          top: h * (.40 + i * .105),
+          width: w * .13,
+          child: Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: ready ? Colors.green.shade700 : Colors.black87,
+              borderRadius: BorderRadius.circular(9),
+              border: Border.all(color: Colors.white38),
+            ),
+            child: Row(
+              children: [
+                if (oven.item != null) ProductIcon(oven.item!, size: h * .07),
+                Expanded(
+                  child: Text(
+                    burnt
+                        ? 'GOSONG'
+                        : ready
+                        ? 'SIAP!'
+                        : 'MEMANGGANG',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
     return out;
   }
@@ -411,12 +632,17 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
   List<Widget> _backDecor(Stage st) {
     final vm = widget.vm;
     final out = <Widget>[];
-    Widget img(String name, double cx, double bottom, double w, double h) => Positioned(
+    Widget img(String name, double cx, double bottom, double w, double h) =>
+        Positioned(
           left: st.x(cx - w / 2),
           top: st.y(bottom - h),
           width: w * st.s,
           height: h * st.s,
-          child: Image.asset('assets/scene/$name.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
+          child: Image.asset(
+            'assets/scene/$name.png',
+            fit: BoxFit.fill,
+            filterQuality: FilterQuality.low,
+          ),
         );
     if (vm.hasDecor(Decor.rug)) out.add(img('rug', 300, 1070, 440, 150));
     if (vm.hasDecor(Decor.frames)) out.add(img('frames', 415, 215, 60, 150));
@@ -436,7 +662,11 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
         transform: Matrix4.identity()
           ..setEntry(3, 2, 0.0016)
           ..rotateY(-open * 1.15),
-        child: Image.asset('assets/scene/door.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
+        child: Image.asset(
+          'assets/scene/door.png',
+          fit: BoxFit.fill,
+          filterQuality: FilterQuality.low,
+        ),
       ),
     );
   }
@@ -456,7 +686,9 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
         angle: _baristaLean + (working ? sin(_time * 9) * 0.02 : 0),
         alignment: const Alignment(0, 0.9),
         child: Image.asset(
-          vm.baristaFemale ? 'assets/people/barista_f.png' : 'assets/people/barista_m.png',
+          vm.baristaFemale
+              ? 'assets/people/barista_f.png'
+              : 'assets/people/barista_m.png',
           fit: BoxFit.fill,
           filterQuality: FilterQuality.medium,
           gaplessPlayback: true,
@@ -478,11 +710,13 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     for (var i = 0; i < min(items.length, 8); i++) {
       final row = i < 4 ? 1 : 0;
       final col = i % 4;
-      out.add(Positioned(
-        left: st.x(150 + col * 25.0),
-        top: st.y(row == 1 ? 404 : 376),
-        child: ProductIcon(items[i], size: 28 * st.s),
-      ));
+      out.add(
+        Positioned(
+          left: st.x(150 + col * 25.0),
+          top: st.y(row == 1 ? 404 : 376),
+          child: ProductIcon(items[i], size: 28 * st.s),
+        ),
+      );
     }
     return out;
   }
@@ -497,40 +731,67 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
       final ready = o.state == OvenState.ready;
       final burnt = o.state == OvenState.burnt;
       final pulse = 0.5 + 0.5 * sin(_time * 8);
-      out.add(Positioned(
-        left: st.x(8 + shown * 64),
-        top: st.y(262),
-        width: 62 * st.s,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 3 * st.s, vertical: 2 * st.s),
-          decoration: BoxDecoration(
-            color: burnt
-                ? Colors.grey.shade800
-                : (ready ? Color.lerp(Colors.green.shade600, Colors.lightGreenAccent, pulse) : Colors.black.withValues(alpha: 0.68)),
-            borderRadius: BorderRadius.circular(8 * st.s),
-          ),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Row(mainAxisSize: MainAxisSize.min, children: [
-              if (!burnt) ProductIcon(o.item!, size: 16),
-              Flexible(
-                child: Text(burnt ? '💨 GOSONG' : (ready ? ' SIAP! x${o.trays * 3}' : ' x${o.trays * 3}'),
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Colors.white)),
-              ),
-            ]),
-            if (!burnt)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: LinearProgressIndicator(
-                  value: ready ? 1 - (o.readyT / 7) : o.progress,
-                  minHeight: 3,
-                  color: ready ? Colors.white : Colors.orangeAccent,
-                  backgroundColor: Colors.white24,
+      out.add(
+        Positioned(
+          left: st.x(8 + shown * 64),
+          top: st.y(262),
+          width: 62 * st.s,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: 3 * st.s,
+              vertical: 2 * st.s,
+            ),
+            decoration: BoxDecoration(
+              color: burnt
+                  ? Colors.grey.shade800
+                  : (ready
+                        ? Color.lerp(
+                            Colors.green.shade600,
+                            Colors.lightGreenAccent,
+                            pulse,
+                          )
+                        : Colors.black.withValues(alpha: 0.68)),
+              borderRadius: BorderRadius.circular(8 * st.s),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!burnt) ProductIcon(o.item!, size: 16),
+                    Flexible(
+                      child: Text(
+                        burnt
+                            ? '💨 GOSONG'
+                            : (ready
+                                  ? ' SIAP! x${o.trays * 3}'
+                                  : ' x${o.trays * 3}'),
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-          ]),
+                if (!burnt)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: LinearProgressIndicator(
+                      value: ready ? 1 - (o.readyT / 7) : o.progress,
+                      minHeight: 3,
+                      color: ready ? Colors.white : Colors.orangeAccent,
+                      backgroundColor: Colors.white24,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
-      ));
+      );
       shown++;
     }
     return out;
@@ -543,35 +804,49 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
 
     {
       final sc = perspScale(GameplayViewModel.binPos.dy);
-      final shake = vm.binShake > 0 ? sin(_time * 40) * 0.1 * min(1.0, vm.binShake) : 0.0;
-      list.add(_Drawable(
-        GameplayViewModel.binPos.dy,
-        Positioned(
-          left: st.x(GameplayViewModel.binPos.dx - 35 * sc),
-          top: st.y(GameplayViewModel.binPos.dy - 96 * sc),
-          width: 70 * sc * st.s,
-          height: 96 * sc * st.s,
-          child: Transform.rotate(
-            angle: shake,
-            alignment: Alignment.bottomCenter,
-            child: Image.asset('assets/scene/bin.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
+      final shake = vm.binShake > 0
+          ? sin(_time * 40) * 0.1 * min(1.0, vm.binShake)
+          : 0.0;
+      list.add(
+        _Drawable(
+          GameplayViewModel.binPos.dy,
+          Positioned(
+            left: st.x(GameplayViewModel.binPos.dx - 35 * sc),
+            top: st.y(GameplayViewModel.binPos.dy - 96 * sc),
+            width: 70 * sc * st.s,
+            height: 96 * sc * st.s,
+            child: Transform.rotate(
+              angle: shake,
+              alignment: Alignment.bottomCenter,
+              child: Image.asset(
+                'assets/scene/bin.png',
+                fit: BoxFit.fill,
+                filterQuality: FilterQuality.low,
+              ),
+            ),
           ),
         ),
-      ));
+      );
     }
 
     void prop(String name, double cx, double by, double w, double h) {
       final sc = perspScale(by);
-      list.add(_Drawable(
-        by,
-        Positioned(
-          left: st.x(cx - w * sc / 2),
-          top: st.y(by - h * sc),
-          width: w * sc * st.s,
-          height: h * sc * st.s,
-          child: Image.asset('assets/scene/$name.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
+      list.add(
+        _Drawable(
+          by,
+          Positioned(
+            left: st.x(cx - w * sc / 2),
+            top: st.y(by - h * sc),
+            width: w * sc * st.s,
+            height: h * sc * st.s,
+            child: Image.asset(
+              'assets/scene/$name.png',
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.low,
+            ),
+          ),
         ),
-      ));
+      );
     }
 
     if (vm.hasDecor(Decor.plantBig)) prop('plant_big', 48, 900, 100, 190);
@@ -585,52 +860,75 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
       for (final c in vm.customers) {
         if (c.tableIndex == i && c.state == CustState.seated) sitter = c;
       }
-      list.add(_Drawable(
-        spot.dy - 1,
-        Positioned(
-          left: st.x(spot.dx - 50 * sc),
-          top: st.y(spot.dy - 30 * sc - 150 * sc),
-          width: 100 * sc * st.s,
-          height: 150 * sc * st.s,
-          child: Image.asset('assets/scene/chair.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
+      list.add(
+        _Drawable(
+          spot.dy - 1,
+          Positioned(
+            left: st.x(spot.dx - 50 * sc),
+            top: st.y(spot.dy - 30 * sc - 150 * sc),
+            width: 100 * sc * st.s,
+            height: 150 * sc * st.s,
+            child: Image.asset(
+              'assets/scene/chair.png',
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.low,
+            ),
+          ),
         ),
-      ));
+      );
       if (sitter != null) {
         final c = sitter;
         final cs = 480 * sc * 0.84;
         final hip = c.variant >= 4 ? 0.72 : 0.616;
         final tableTop = spot.dy - 60 * sc;
-        list.add(_Drawable(
-          spot.dy - 0.5,
-          Positioned(
-            left: st.x(spot.dx - cs / 2),
-            top: st.y(tableTop - hip * cs),
-            width: cs * st.s,
-            height: cs * st.s,
-            child: WalkingSprite(variant: c.variant, size: cs * st.s, time: _time + c.id, seated: true, hop: c.hop, angry: c.angry),
+        list.add(
+          _Drawable(
+            spot.dy - 0.5,
+            Positioned(
+              left: st.x(spot.dx - cs / 2),
+              top: st.y(tableTop - hip * cs),
+              width: cs * st.s,
+              height: cs * st.s,
+              child: WalkingSprite(
+                variant: c.variant,
+                size: cs * st.s,
+                time: _time + c.id,
+                seated: true,
+                hop: c.hop,
+                angry: c.angry,
+              ),
+            ),
           ),
-        ));
+        );
       }
-      list.add(_Drawable(
-        spot.dy,
-        Positioned(
-          left: st.x(spot.dx - 75 * sc),
-          top: st.y(spot.dy - 100 * sc),
-          width: 150 * sc * st.s,
-          height: 120 * sc * st.s,
-          child: Image.asset('assets/scene/table_${vm.clothStyle}.png', fit: BoxFit.fill, filterQuality: FilterQuality.low),
+      list.add(
+        _Drawable(
+          spot.dy,
+          Positioned(
+            left: st.x(spot.dx - 75 * sc),
+            top: st.y(spot.dy - 100 * sc),
+            width: 150 * sc * st.s,
+            height: 120 * sc * st.s,
+            child: Image.asset(
+              'assets/scene/table_${vm.clothStyle}.png',
+              fit: BoxFit.fill,
+              filterQuality: FilterQuality.low,
+            ),
+          ),
         ),
-      ));
+      );
       if (sitter != null && sitter.items.isNotEmpty) {
         final pr = sitter.items.first.product;
-        list.add(_Drawable(
-          spot.dy + 0.1,
-          Positioned(
-            left: st.x(spot.dx + 6 * sc),
-            top: st.y(spot.dy - 96 * sc),
-            child: ProductIcon(pr, size: 38 * sc * st.s),
+        list.add(
+          _Drawable(
+            spot.dy + 0.1,
+            Positioned(
+              left: st.x(spot.dx + 6 * sc),
+              top: st.y(spot.dy - 96 * sc),
+              child: ProductIcon(pr, size: 38 * sc * st.s),
+            ),
           ),
-        ));
+        );
       }
     }
 
@@ -644,40 +942,46 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
       final sc = perspScale(c.y);
       final cs = 432 * sc;
       final lift = c.isWalking ? max(0.0, sin(c.walkPhase).abs() - 0.6) : 0.0;
-      list.add(_Drawable(
-        key - 0.01,
-        Positioned(
-          left: st.x(c.x - cs * 0.22),
-          top: st.y(c.y - cs * 0.03),
-          width: cs * 0.44 * (1 - lift * 0.4) * st.s,
-          height: cs * 0.07 * st.s,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.28),
-              borderRadius: BorderRadius.all(Radius.elliptical(cs * 0.22 * st.s, cs * 0.035 * st.s)),
+      list.add(
+        _Drawable(
+          key - 0.01,
+          Positioned(
+            left: st.x(c.x - cs * 0.22),
+            top: st.y(c.y - cs * 0.03),
+            width: cs * 0.44 * (1 - lift * 0.4) * st.s,
+            height: cs * 0.07 * st.s,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.28),
+                borderRadius: BorderRadius.all(
+                  Radius.elliptical(cs * 0.22 * st.s, cs * 0.035 * st.s),
+                ),
+              ),
             ),
           ),
         ),
-      ));
-      list.add(_Drawable(
-        key,
-        Positioned(
-          left: st.x(c.x - cs / 2),
-          top: st.y(c.y - 0.92 * cs),
-          width: cs * st.s,
-          height: cs * st.s,
-          child: WalkingSprite(
-            variant: c.variant,
-            size: cs * st.s,
-            time: _time + c.id,
-            phase: c.walkPhase,
-            walking: c.isWalking,
-            hop: c.hop,
-            angry: c.angry,
-            lean: c.lean,
+      );
+      list.add(
+        _Drawable(
+          key,
+          Positioned(
+            left: st.x(c.x - cs / 2),
+            top: st.y(c.y - 0.92 * cs),
+            width: cs * st.s,
+            height: cs * st.s,
+            child: WalkingSprite(
+              variant: c.variant,
+              size: cs * st.s,
+              time: _time + c.id,
+              phase: c.walkPhase,
+              walking: c.isWalking,
+              hop: c.hop,
+              angry: c.angry,
+              lean: c.lean,
+            ),
           ),
         ),
-      ));
+      );
     }
 
     list.sort((a, b) => a.key.compareTo(b.key));
@@ -694,13 +998,22 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
 
     Widget place(double cxUnits, double topUnits, Widget child) {
       final cx = st.x(cxUnits);
-      final left = (cx - maxW / 2).clamp(6.0, max(6.0, w - maxW - 6)).toDouble();
-      return Positioned(left: left, width: maxW, bottom: h - st.y(topUnits), child: child);
+      final left = (cx - maxW / 2)
+          .clamp(6.0, max(6.0, w - maxW - 6))
+          .toDouble();
+      return Positioned(
+        left: left,
+        width: maxW,
+        bottom: h - st.y(topUnits),
+        child: child,
+      );
     }
 
     for (final c in vm.customers) {
       final seated = c.state == CustState.seated;
-      final sc = perspScale(seated ? GameplayViewModel.tableSpots[c.tableIndex].dy : c.y);
+      final sc = perspScale(
+        seated ? GameplayViewModel.tableSpots[c.tableIndex].dy : c.y,
+      );
       final cs = (seated ? 480 * 0.84 : 432) * sc;
       double headTop;
       double cx = c.x;
@@ -718,10 +1031,22 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
         children.add(_OrderChip(customer: c, selected: vm.selectedId == c.id));
       }
       if (children.isEmpty) continue;
-      out.add(place(cx, headTop - 2, Column(mainAxisSize: MainAxisSize.min, children: children)));
+      out.add(
+        place(
+          cx,
+          headTop - 2,
+          Column(mainAxisSize: MainAxisSize.min, children: children),
+        ),
+      );
     }
     if (vm.baristaBubble != null) {
-      out.add(place(_baristaX, 292, _SpeechBubble(text: vm.baristaBubble!, barista: true)));
+      out.add(
+        place(
+          _baristaX,
+          292,
+          _SpeechBubble(text: vm.baristaBubble!, barista: true),
+        ),
+      );
     }
     return out;
   }
@@ -730,45 +1055,60 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
     final out = <Widget>[];
     for (final f in widget.vm.flyers) {
       final t = Curves.easeInOut.transform(f.t.clamp(0.0, 1.0).toDouble());
-      final p = Offset.lerp(f.from, f.to, t)! + Offset(0, -sin(pi * t) * (f.trash ? 90 : 55));
+      final p =
+          Offset.lerp(f.from, f.to, t)! +
+          Offset(0, -sin(pi * t) * (f.trash ? 90 : 55));
       final scale = f.trash ? (1 - 0.45 * t) : 1.0;
       final size = 40.0 * st.s.clamp(0.8, 1.6).toDouble();
-      out.add(Positioned(
-        left: st.x(p.dx) - size / 2,
-        top: st.y(p.dy) - size / 2,
-        child: Transform.rotate(
-          angle: f.trash ? t * 9 : 0,
-          child: Transform.scale(
-            scale: scale,
-            child: f.product != null ? ProductIcon(f.product!, size: size) : Text(f.emoji, style: TextStyle(fontSize: size * 0.8, height: 1)),
+      out.add(
+        Positioned(
+          left: st.x(p.dx) - size / 2,
+          top: st.y(p.dy) - size / 2,
+          child: Transform.rotate(
+            angle: f.trash ? t * 9 : 0,
+            child: Transform.scale(
+              scale: scale,
+              child: f.product != null
+                  ? ProductIcon(f.product!, size: size)
+                  : Text(
+                      f.emoji,
+                      style: TextStyle(fontSize: size * 0.8, height: 1),
+                    ),
+            ),
           ),
         ),
-      ));
+      );
     }
     return out;
   }
 
   List<Widget> _floaters(Stage st) => [
-        for (final f in widget.vm.floaters)
-          Positioned(
-            left: st.x(f.x) - 60,
-            top: st.y(f.y),
-            width: 120,
-            child: Opacity(
-              opacity: (1 - f.t).clamp(0.0, 1.0).toDouble(),
-              child: Text(
-                f.text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 19 + 5 * (1 - f.t),
-                  fontWeight: FontWeight.w800,
-                  color: f.color,
-                  shadows: const [Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(1, 2))],
+    for (final f in widget.vm.floaters)
+      Positioned(
+        left: st.x(f.x) - 60,
+        top: st.y(f.y),
+        width: 120,
+        child: Opacity(
+          opacity: (1 - f.t).clamp(0.0, 1.0).toDouble(),
+          child: Text(
+            f.text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 19 + 5 * (1 - f.t),
+              fontWeight: FontWeight.w800,
+              color: f.color,
+              shadows: const [
+                Shadow(
+                  color: Colors.black87,
+                  blurRadius: 4,
+                  offset: Offset(1, 2),
                 ),
-              ),
+              ],
             ),
           ),
-      ];
+        ),
+      ),
+  ];
 }
 
 // =====================================================================================
@@ -780,22 +1120,36 @@ class _SpeechBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = barista ? const Color(0xFFE8F5E9) : Colors.white;
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 4, offset: const Offset(0, 2))],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11.5,
+              height: 1.25,
+              fontWeight: FontWeight.w600,
+              color: Colors.brown.shade900,
+            ),
+          ),
         ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 11.5, height: 1.25, fontWeight: FontWeight.w600, color: Colors.brown.shade900),
-        ),
-      ),
-      CustomPaint(size: const Size(12, 7), painter: _TailPainter(bg)),
-    ]);
+        CustomPaint(size: const Size(12, 7), painter: _TailPainter(bg)),
+      ],
+    );
   }
 }
 
@@ -808,7 +1162,11 @@ class _OrderChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = customer.patienceFraction;
-    final bar = Color.lerp(Colors.redAccent, Colors.lightGreenAccent.shade700, p)!;
+    final bar = Color.lerp(
+      Colors.redAccent,
+      Colors.lightGreenAccent.shade700,
+      p,
+    )!;
     final badge = switch (customer.trait) {
       CustomerTrait.vip => ' 👑',
       CustomerTrait.critic => ' 🧐',
@@ -822,34 +1180,78 @@ class _OrderChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.97),
         borderRadius: BorderRadius.circular(12),
-        border: selected ? Border.all(color: const Color(0xFFFFB300), width: 2) : null,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.22), blurRadius: 4, offset: const Offset(0, 2))],
-      ),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text('${customer.name}$badge', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.brown.shade700)),
-        const SizedBox(height: 2),
-        Row(mainAxisSize: MainAxisSize.min, children: [
-          for (final it in customer.items)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Stack(alignment: Alignment.center, children: [
-                  ProductIcon(it.product, size: 28, dim: it.done),
-                  if (it.done) const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                ]),
-                Text(it.product.label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: it.done ? Colors.grey : Colors.brown.shade900)),
-              ]),
-            ),
-        ]),
-        const SizedBox(height: 3),
-        SizedBox(
-          width: 60,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(value: p, minHeight: 4, color: bar, backgroundColor: Colors.brown.shade100),
+        border: selected
+            ? Border.all(color: const Color(0xFFFFB300), width: 2)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-        ),
-      ]),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${customer.name}$badge',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: Colors.brown.shade700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final it in customer.items)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ProductIcon(it.product, size: 28, dim: it.done),
+                          if (it.done)
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 20,
+                            ),
+                        ],
+                      ),
+                      Text(
+                        it.product.label,
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: it.done ? Colors.grey : Colors.brown.shade900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 3),
+          SizedBox(
+            width: 60,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: p,
+                minHeight: 4,
+                color: bar,
+                backgroundColor: Colors.brown.shade100,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -873,9 +1275,16 @@ class _TailPainter extends CustomPainter {
 
 // =====================================================================================
 // Painter ambient: memakai `repaint` (ValueNotifier) agar digambar ~20 fps, tanpa membangun ulang widget.
-Paint _glowPaint(Offset c, double r, Color color, double alpha) => Paint()
-  ..shader = RadialGradient(colors: [color.withValues(alpha: alpha), color.withValues(alpha: alpha * 0.25), Colors.transparent], stops: const [0, 0.45, 1])
-      .createShader(Rect.fromCircle(center: c, radius: r));
+Paint _glowPaint(Offset c, double r, Color color, double alpha) =>
+    Paint()
+      ..shader = RadialGradient(
+        colors: [
+          color.withValues(alpha: alpha),
+          color.withValues(alpha: alpha * 0.25),
+          Colors.transparent,
+        ],
+        stops: const [0, 0.45, 1],
+      ).createShader(Rect.fromCircle(center: c, radius: r));
 
 class _SkyPainter extends CustomPainter {
   _SkyPainter(this.st, this.vm, this.time) : super(repaint: time);
@@ -918,45 +1327,119 @@ class _SkyPainter extends CustomPainter {
       top = Color.lerp(top, const Color(0xFF55606E), 0.6)!;
       bottom = Color.lerp(bottom, const Color(0xFF8A95A3), 0.6)!;
     }
-    canvas.drawRect(rect, Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [top, bottom]).createShader(rect));
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [top, bottom],
+        ).createShader(rect),
+    );
     final night = hour < 6 || hour >= 19.5;
     final c = Offset(st.x(86), st.y(150));
     if (!rain) {
       if (night) {
-        canvas.drawCircle(c, 26 * st.s, _glowPaint(c, 26 * st.s, Colors.white, 0.25));
-        canvas.drawCircle(c, 12 * st.s, Paint()..color = const Color(0xFFFFF6D6));
-        canvas.drawCircle(c + Offset(4 * st.s, -2 * st.s), 10 * st.s, Paint()..color = top);
+        canvas.drawCircle(
+          c,
+          26 * st.s,
+          _glowPaint(c, 26 * st.s, Colors.white, 0.25),
+        );
+        canvas.drawCircle(
+          c,
+          12 * st.s,
+          Paint()..color = const Color(0xFFFFF6D6),
+        );
+        canvas.drawCircle(
+          c + Offset(4 * st.s, -2 * st.s),
+          10 * st.s,
+          Paint()..color = top,
+        );
         for (var i = 0; i < 18; i++) {
-          final p = Offset(st.x(30 + (i * 53) % 130), st.y(80 + (i * 37) % 170));
-          canvas.drawCircle(p, (0.8 + (i % 3) * 0.5) * st.s, Paint()..color = Colors.white.withValues(alpha: 0.5 + 0.5 * sin(t * 2 + i)));
+          final p = Offset(
+            st.x(30 + (i * 53) % 130),
+            st.y(80 + (i * 37) % 170),
+          );
+          canvas.drawCircle(
+            p,
+            (0.8 + (i % 3) * 0.5) * st.s,
+            Paint()
+              ..color = Colors.white.withValues(
+                alpha: 0.5 + 0.5 * sin(t * 2 + i),
+              ),
+          );
         }
       } else {
         final warm = hour < 8 || hour > 16.5;
-        canvas.drawCircle(c, 40 * st.s, _glowPaint(c, 40 * st.s, warm ? const Color(0xFFFF9A4D) : const Color(0xFFFFF2A8), 0.5));
-        canvas.drawCircle(c, 15 * st.s, Paint()..color = warm ? const Color(0xFFFFB45A) : const Color(0xFFFFE680));
+        canvas.drawCircle(
+          c,
+          40 * st.s,
+          _glowPaint(
+            c,
+            40 * st.s,
+            warm ? const Color(0xFFFF9A4D) : const Color(0xFFFFF2A8),
+            0.5,
+          ),
+        );
+        canvas.drawCircle(
+          c,
+          15 * st.s,
+          Paint()
+            ..color = warm ? const Color(0xFFFFB45A) : const Color(0xFFFFE680),
+        );
       }
     }
     for (var k = 0; k < 3; k++) {
       final x = ((t * (5 + k * 2) + k * 230) % 820) - 120;
       final y = 100 + k * 55.0;
-      final cp = Paint()..color = Colors.white.withValues(alpha: night ? 0.10 : (rain ? 0.5 : 0.7));
-      canvas.drawOval(Rect.fromCenter(center: Offset(st.x(x), st.y(y)), width: 70 * st.s, height: 20 * st.s), cp);
-      canvas.drawOval(Rect.fromCenter(center: Offset(st.x(x + 18), st.y(y - 8)), width: 44 * st.s, height: 22 * st.s), cp);
+      final cp = Paint()
+        ..color = Colors.white.withValues(
+          alpha: night ? 0.10 : (rain ? 0.5 : 0.7),
+        );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(st.x(x), st.y(y)),
+          width: 70 * st.s,
+          height: 20 * st.s,
+        ),
+        cp,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(st.x(x + 18), st.y(y - 8)),
+          width: 44 * st.s,
+          height: 22 * st.s,
+        ),
+        cp,
+      );
     }
-    canvas.drawRect(Rect.fromLTRB(st.x(440), st.y(470), st.x(600), st.y(548)), Paint()..color = const Color(0xFF9A9288));
-    canvas.drawRect(Rect.fromLTRB(st.x(440), st.y(470), st.x(600), st.y(476)), Paint()..color = const Color(0xFF7C746A));
+    canvas.drawRect(
+      Rect.fromLTRB(st.x(440), st.y(470), st.x(600), st.y(548)),
+      Paint()..color = const Color(0xFF9A9288),
+    );
+    canvas.drawRect(
+      Rect.fromLTRB(st.x(440), st.y(470), st.x(600), st.y(476)),
+      Paint()..color = const Color(0xFF7C746A),
+    );
     if (rain) {
-      final rp = Paint()..color = Colors.white.withValues(alpha: 0.55)..strokeWidth = 1.2 * st.s;
+      final rp = Paint()
+        ..color = Colors.white.withValues(alpha: 0.55)
+        ..strokeWidth = 1.2 * st.s;
       for (var i = 0; i < 50; i++) {
         final x = (i * 83) % 600 + 0.0;
         final y0 = ((t * 520 + i * 47) % 560);
-        canvas.drawLine(Offset(st.x(x), st.y(y0)), Offset(st.x(x - 5), st.y(y0 + 22)), rp);
+        canvas.drawLine(
+          Offset(st.x(x), st.y(y0)),
+          Offset(st.x(x - 5), st.y(y0 + 22)),
+          rp,
+        );
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _SkyPainter old) => old.st.s != st.s || old.st.ox != st.ox;
+  bool shouldRepaint(covariant _SkyPainter old) =>
+      old.st.s != st.s || old.st.ox != st.ox;
 }
 
 class _LightsPainter extends CustomPainter {
@@ -966,8 +1449,14 @@ class _LightsPainter extends CustomPainter {
   final ValueNotifier<double> time;
 
   void _lamp(Canvas canvas, double x, double shadeY, double w, Color shade) {
-    final cord = Paint()..color = const Color(0xFF3A2A20)..strokeWidth = 1.6 * st.s;
-    canvas.drawLine(Offset(st.x(x), 0), Offset(st.x(x), st.y(shadeY - 24)), cord);
+    final cord = Paint()
+      ..color = const Color(0xFF3A2A20)
+      ..strokeWidth = 1.6 * st.s;
+    canvas.drawLine(
+      Offset(st.x(x), 0),
+      Offset(st.x(x), st.y(shadeY - 24)),
+      cord,
+    );
     final path = Path()
       ..moveTo(st.x(x - w * 0.28), st.y(shadeY - 24))
       ..lineTo(st.x(x + w * 0.28), st.y(shadeY - 24))
@@ -975,7 +1464,14 @@ class _LightsPainter extends CustomPainter {
       ..lineTo(st.x(x - w * 0.5), st.y(shadeY))
       ..close();
     canvas.drawPath(path, Paint()..color = shade);
-    canvas.drawOval(Rect.fromCenter(center: Offset(st.x(x), st.y(shadeY + 1)), width: w * 0.6 * st.s, height: 7 * st.s), Paint()..color = const Color(0xFFFFF1B8));
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(st.x(x), st.y(shadeY + 1)),
+        width: w * 0.6 * st.s,
+        height: 7 * st.s,
+      ),
+      Paint()..color = const Color(0xFFFFF1B8),
+    );
   }
 
   @override
@@ -989,12 +1485,23 @@ class _LightsPainter extends CustomPainter {
       }
     }
     if (vm.hasDecor(Decor.stringLights)) {
-      const cols = [Color(0xFFFFD54F), Color(0xFFFF8A80), Color(0xFF80D8FF), Color(0xFFB9F6CA)];
+      const cols = [
+        Color(0xFFFFD54F),
+        Color(0xFFFF8A80),
+        Color(0xFF80D8FF),
+        Color(0xFFB9F6CA),
+      ];
       for (var seg = 0; seg < 3; seg++) {
         final x0 = seg * 200.0, x1 = x0 + 200;
         final p = Path()..moveTo(st.x(x0), st.y(14));
         p.quadraticBezierTo(st.x((x0 + x1) / 2), st.y(52), st.x(x1), st.y(14));
-        canvas.drawPath(p, Paint()..color = const Color(0xFF3A2A20)..style = PaintingStyle.stroke..strokeWidth = 1.3 * st.s);
+        canvas.drawPath(
+          p,
+          Paint()
+            ..color = const Color(0xFF3A2A20)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.3 * st.s,
+        );
         for (var i = 1; i < 9; i++) {
           final u = i / 9;
           final x = x0 + 200 * u;
@@ -1002,15 +1509,24 @@ class _LightsPainter extends CustomPainter {
           final tw = 0.6 + 0.4 * sin(t * 3 + i + seg);
           final col = cols[(i + seg) % 4];
           final c = Offset(st.x(x), st.y(y + 4));
-          canvas.drawCircle(c, 8 * st.s, _glowPaint(c, 8 * st.s, col, 0.5 * tw));
-          canvas.drawCircle(c, 2.6 * st.s, Paint()..color = col.withValues(alpha: 0.5 + 0.5 * tw));
+          canvas.drawCircle(
+            c,
+            8 * st.s,
+            _glowPaint(c, 8 * st.s, col, 0.5 * tw),
+          );
+          canvas.drawCircle(
+            c,
+            2.6 * st.s,
+            Paint()..color = col.withValues(alpha: 0.5 + 0.5 * tw),
+          );
         }
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant _LightsPainter old) => old.st.s != st.s || old.st.ox != st.ox;
+  bool shouldRepaint(covariant _LightsPainter old) =>
+      old.st.s != st.s || old.st.ox != st.ox;
 }
 
 class _GlowPainter extends CustomPainter {
@@ -1036,11 +1552,23 @@ class _GlowPainter extends CustomPainter {
         _glow(canvas, x, 700, 130, const Color(0xFFFFC27A), a * 0.9);
       }
     }
-    if (neon) _glow(canvas, 510, 170, 110, const Color(0xFFFF5A9F), 0.16 + 0.22 * night);
+    if (neon)
+      _glow(
+        canvas,
+        510,
+        170,
+        110,
+        const Color(0xFFFF5A9F),
+        0.16 + 0.22 * night,
+      );
   }
 
   @override
-  bool shouldRepaint(covariant _GlowPainter old) => old.night != night || old.neon != neon || old.pendants != pendants || old.st.s != st.s;
+  bool shouldRepaint(covariant _GlowPainter old) =>
+      old.night != night ||
+      old.neon != neon ||
+      old.pendants != pendants ||
+      old.st.s != st.s;
 }
 
 class _FxPainter extends CustomPainter {
@@ -1056,20 +1584,37 @@ class _FxPainter extends CustomPainter {
     final intensity = machine ? 1.0 : 0.3;
     for (var i = 0; i < 5; i++) {
       final p = (t * (machine ? 0.6 : 0.3) + i / 5) % 1.0;
-      final c = Offset(st.x(395 + sin((p + i) * 5.5) * 9 * (0.5 + p)), st.y(372 - p * 80));
+      final c = Offset(
+        st.x(395 + sin((p + i) * 5.5) * 9 * (0.5 + p)),
+        st.y(372 - p * 80),
+      );
       final r = (6 + p * 12) * st.s;
-      canvas.drawCircle(c, r, _glowPaint(c, r, Colors.white, (1 - p) * 0.5 * intensity));
+      canvas.drawCircle(
+        c,
+        r,
+        _glowPaint(c, r, Colors.white, (1 - p) * 0.5 * intensity),
+      );
     }
-    final baking = vm.ovens.any((o) => o.state == OvenState.baking || o.state == OvenState.ready);
+    final baking = vm.ovens.any(
+      (o) => o.state == OvenState.baking || o.state == OvenState.ready,
+    );
     if (baking) {
       final glow = 0.6 + 0.4 * sin(t * 6);
       final c = Offset(st.x(72), st.y(396));
-      canvas.drawCircle(c, 36 * st.s, _glowPaint(c, 36 * st.s, const Color(0xFFFF9A3D), 0.6 * glow));
+      canvas.drawCircle(
+        c,
+        36 * st.s,
+        _glowPaint(c, 36 * st.s, const Color(0xFFFF9A3D), 0.6 * glow),
+      );
       for (var i = 0; i < 4; i++) {
         final p = (t * 0.35 + i / 4) % 1.0;
         final cc = Offset(st.x(97 + sin((p + i) * 4) * 7), st.y(286 - p * 70));
         final r = (5 + p * 11) * st.s;
-        canvas.drawCircle(cc, r, _glowPaint(cc, r, Colors.grey, (1 - p) * 0.45));
+        canvas.drawCircle(
+          cc,
+          r,
+          _glowPaint(cc, r, Colors.grey, (1 - p) * 0.45),
+        );
       }
     }
     if (vm.ovens.any((o) => o.state == OvenState.burnt)) {
@@ -1077,7 +1622,11 @@ class _FxPainter extends CustomPainter {
         final p = (t * 0.7 + i / 5) % 1.0;
         final cc = Offset(st.x(97 + sin((p + i) * 3) * 10), st.y(286 - p * 90));
         final r = (7 + p * 16) * st.s;
-        canvas.drawCircle(cc, r, _glowPaint(cc, r, Colors.black, (1 - p) * 0.55));
+        canvas.drawCircle(
+          cc,
+          r,
+          _glowPaint(cc, r, Colors.black, (1 - p) * 0.55),
+        );
       }
     }
   }
@@ -1100,7 +1649,11 @@ class _MotePainter extends CustomPainter {
       final x = (m.dx + sin(t * 0.3 + i) * 0.03) * size.width;
       final y = ((m.dy + t * 0.012 * (1 + i % 3)) % 1.0) * size.height * 0.7;
       final tw = 0.5 + 0.5 * sin(t * 1.6 + i * 1.3);
-      canvas.drawCircle(Offset(x, y), (1.1 + (i % 3)) * (st.s + 0.3), Paint()..color = const Color(0xFFFFF1C2).withValues(alpha: 0.16 * tw));
+      canvas.drawCircle(
+        Offset(x, y),
+        (1.1 + (i % 3)) * (st.s + 0.3),
+        Paint()..color = const Color(0xFFFFF1C2).withValues(alpha: 0.16 * tw),
+      );
     }
   }
 
@@ -1108,64 +1661,104 @@ class _MotePainter extends CustomPainter {
   bool shouldRepaint(covariant _MotePainter old) => old.st.s != st.s;
 }
 
-
 /// Dinding, jendela, lantai, dan counter digambar dalam bidang horizontal.
 class _LandscapeRoomPainter extends CustomPainter {
   _LandscapeRoomPainter(this.vm, this.time, this.night) : super(repaint: time);
   final GameplayViewModel vm;
   final ValueNotifier<double> time;
   final double night;
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
-    final wall = Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
-      colors: [const Color(0xFFE7C99F), Color.lerp(const Color(0xFFC99B68), const Color(0xFF604536), night)!]).createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size, wall);
-    final floor = Path()..moveTo(0, h * .62)..lineTo(w, h * .62)..lineTo(w, h)..lineTo(0, h)..close();
-    canvas.drawPath(floor, Paint()..color = const Color(0xFF9B704D));
-    // Panel dinding dan jendela lebar.
-    final panel = Paint()..color = const Color(0xFF8B5E3C);
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.59,h*.10,w*.22,h*.34), const Radius.circular(12)), panel);
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.605,h*.12,w*.19,h*.30), const Radius.circular(8)),
-      Paint()..color = const Color(0xFF9CC6D0));
-    canvas.drawLine(Offset(w*.70,h*.12), Offset(w*.70,h*.42), Paint()..color=const Color(0xFF6C4932)..strokeWidth=5);
-    canvas.drawLine(Offset(w*.605,h*.27), Offset(w*.795,h*.27), Paint()..color=const Color(0xFF6C4932)..strokeWidth=5);
-    // Counter utama berbentuk panjang, dengan permukaan kayu.
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.14,h*.38,w*.43,h*.31), const Radius.circular(18)),
-      Paint()..color=const Color(0xFF65412D));
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.14,h*.37,w*.43,h*.07), const Radius.circular(12)),
-      Paint()..color=const Color(0xFFD7A36A));
-    canvas.drawRect(Rect.fromLTWH(w*.16,h*.47,w*.39,h*.19), Paint()..color=const Color(0xFF805337));
-    for (var i=0;i<5;i++) {
-      final x=w*(.18+i*.075);
-      canvas.drawLine(Offset(x,h*.49),Offset(x,h*.64),Paint()..color=const Color(0xFF5B3928)..strokeWidth=2);
+    final wallRect = Rect.fromLTWH(0, 0, w, h * .66);
+    canvas.drawRect(wallRect, Paint()..shader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color.lerp(const Color(0xFFFFD9B8), const Color(0xFF604536), night)!,
+        Color.lerp(const Color(0xFFF1C49B), const Color(0xFF8A6048), night)!,
+      ],
+    ).createShader(wallRect));
+
+    // Jendela besar di kiri seperti desain referensi.
+    final frame = RRect.fromRectAndRadius(
+      Rect.fromLTWH(w * .035, h * .14, w * .27, h * .40),
+      const Radius.circular(26),
+    );
+    canvas.drawRRect(frame, Paint()..color = const Color(0xFF9A603A));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * .047, h * .155, w * .246, h * .37),
+        const Radius.circular(20),
+      ),
+      Paint()..color = const Color(0xFF9CCFDF),
+    );
+    canvas.drawLine(Offset(w * .17, h * .155), Offset(w * .17, h * .525),
+      Paint()..color = const Color(0xFF9A603A)..strokeWidth = 5);
+
+    // Panel kayu di bawah dinding dan lantai ubin hangat.
+    canvas.drawRect(Rect.fromLTWH(0, h * .56, w, h * .10),
+      Paint()..color = const Color(0xFF9A603A));
+    canvas.drawRect(Rect.fromLTWH(0, h * .66, w, h * .34),
+      Paint()..color = const Color(0xFFE9B98D));
+    final tile = Paint()..color = const Color(0xFFC98F64)..strokeWidth = 1;
+    for (var i = 1; i < 12; i++) {
+      canvas.drawLine(Offset(w * i / 12, h * .66), Offset(w * i / 12, h), tile);
     }
-    // Garis ubin lantai.
-    final tile=Paint()..color=const Color(0xFF6F4E38)..strokeWidth=1;
-    for(var i=1;i<9;i++) canvas.drawLine(Offset(w*i/9,h*.64),Offset(w*i/9,h),tile);
-    for(var i=0;i<3;i++) canvas.drawLine(Offset(0,h*(.73+i*.09)),Offset(w,h*(.73+i*.09)),tile);
+    for (var i = 1; i < 4; i++) {
+      canvas.drawLine(Offset(0, h * (.66 + i * .085)),
+        Offset(w, h * (.66 + i * .085)), tile);
+    }
+    // Cahaya hangat lembut dari lampu kafe.
+    final glow = Paint()..shader = RadialGradient(colors: [
+      const Color(0x33FFF0C9), Colors.transparent,
+    ]).createShader(Rect.fromCircle(center: Offset(w * .52, h * .35), radius: h * .55));
+    canvas.drawRect(Offset.zero & size, glow);
   }
+
   @override
   bool shouldRepaint(covariant _LandscapeRoomPainter old) => old.night != night;
 }
 
 class _LandscapeAmbientPainter extends CustomPainter {
-  _LandscapeAmbientPainter(this.vm, this.time, this.night) : super(repaint: time);
+  _LandscapeAmbientPainter(this.vm, this.time, this.night)
+    : super(repaint: time);
   final GameplayViewModel vm;
   final ValueNotifier<double> time;
   final double night;
   @override
   void paint(Canvas canvas, Size size) {
-    final t=time.value;
-    for(var i=0;i<3;i++) {
-      final x=size.width*(.22+i*.27);
-      final y=size.height*(.08+sin(t*1.7+i)*.008);
-      final rect=Rect.fromCircle(center:Offset(x,y),radius:size.height*.13);
-      canvas.drawCircle(rect.center,rect.width/2,Paint()..shader=RadialGradient(colors:[const Color(0xFFFFD27A).withValues(alpha:.13+night*.08),Colors.transparent]).createShader(rect));
+    final t = time.value;
+    for (var i = 0; i < 3; i++) {
+      final x = size.width * (.22 + i * .27);
+      final y = size.height * (.08 + sin(t * 1.7 + i) * .008);
+      final rect = Rect.fromCircle(
+        center: Offset(x, y),
+        radius: size.height * .13,
+      );
+      canvas.drawCircle(
+        rect.center,
+        rect.width / 2,
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              const Color(0xFFFFD27A).withValues(alpha: .13 + night * .08),
+              Colors.transparent,
+            ],
+          ).createShader(rect),
+      );
     }
-    final vignette=Paint()..shader=RadialGradient(radius:1.15,colors:[Colors.transparent,Colors.black.withValues(alpha:.28)],stops:const [.65,1]).createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size,vignette);
+    final vignette = Paint()
+      ..shader = RadialGradient(
+        radius: 1.15,
+        colors: [Colors.transparent, Colors.black.withValues(alpha: .28)],
+        stops: const [.65, 1],
+      ).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, vignette);
   }
+
   @override
-  bool shouldRepaint(covariant _LandscapeAmbientPainter old) => old.night != night;
+  bool shouldRepaint(covariant _LandscapeAmbientPainter old) =>
+      old.night != night;
 }
