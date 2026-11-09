@@ -179,8 +179,9 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, box) {
       _size = box.biggest;
-      final st = Stage(_size);
       final vm = widget.vm;
+      if (_size.width > _size.height) return _buildLandscape(vm);
+      final st = Stage(_size);
       final wallRect = Rect.fromLTWH(st.ox, 0, Stage.w * st.s, Stage.h * st.s);
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -266,6 +267,144 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
         ),
       );
     });
+  }
+
+
+  /// Komposisi khusus layar lebar: ruang kafe digambar ulang dalam koordinat
+  /// landscape, bukan memutar kanvas portrait lama.
+  Widget _buildLandscape(GameplayViewModel vm) {
+    final w = _size.width;
+    final h = _size.height;
+    final night = _daylight().night;
+    return AnimatedBuilder(
+      animation: vm.frame,
+      builder: (_, __) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapUp: (details) {
+        final p = details.localPosition;
+        if (p.dx < w * 0.18 && p.dy > h * 0.36 && p.dy < h * 0.82) {
+          widget.onOvenTap?.call();
+        } else if (vm.hasDecor(Decor.jukebox) && p.dx > w * 0.88 && p.dy > h * 0.55) {
+          widget.onJukeboxTap?.call();
+        }
+      },
+      child: Stack(clipBehavior: Clip.hardEdge, children: [
+        Positioned.fill(child: CustomPaint(painter: _LandscapeRoomPainter(vm, _ambient, night))),
+        // Pintu dan jendela di sisi kanan ruang.
+        Positioned(left: w * .865, top: h * .12, width: w * .105, height: h * .49,
+          child: Image.asset('assets/scene/door.png', fit: BoxFit.fill)),
+        // Counter horizontal dibuat oleh painter agar proporsinya sesuai layar lebar.
+        // Etalase roti.
+        ..._landscapePastries(vm, w, h),
+        // Barista berdiri di belakang area kerja, tetap tegak.
+        Positioned(left: w * .37, top: h * .075, width: h * .49, height: h * .49,
+          child: AnimatedBuilder(
+            animation: _ambient,
+            builder: (_, __) => Transform.translate(
+              offset: Offset(0, sin(_ambient.value * 2) * 2),
+              child: Image.asset(vm.baristaFemale ? 'assets/people/barista_f.png' : 'assets/people/barista_m.png',
+                fit: BoxFit.contain, filterQuality: FilterQuality.medium),
+            ),
+          )),
+        // Meja dan kursi disusun mendatar di sisi depan kafe.
+        ..._landscapeTables(vm, w, h),
+        // Pelanggan berjalan / mengantre; koordinat dunia lama dipetakan ke
+        // jalur horizontal tanpa memutar sprite karakter.
+        ..._landscapeCustomers(vm, w, h),
+        ..._landscapeOvens(vm, w, h),
+        if (vm.hasDecor(Decor.plantBig))
+          Positioned(left: w * .02, bottom: h * .015, width: h * .19, height: h * .32,
+            child: Image.asset('assets/scene/plant_big.png', fit: BoxFit.contain)),
+        if (vm.hasDecor(Decor.plantSmall))
+          Positioned(right: w * .015, bottom: h * .02, width: h * .12, height: h * .22,
+            child: Image.asset('assets/scene/plant_small.png', fit: BoxFit.contain)),
+        if (vm.hasDecor(Decor.jukebox))
+          Positioned(right: w * .025, bottom: h * .12, width: h * .19, height: h * .32,
+            child: Image.asset('assets/scene/jukebox.png', fit: BoxFit.contain)),
+        if (vm.hasDecor(Decor.neon))
+          Positioned(right: w * .20, top: h * .025, width: w * .13, height: h * .10,
+            child: Image.asset('assets/scene/neon.png', fit: BoxFit.contain)),
+        Positioned.fill(child: IgnorePointer(child: CustomPaint(
+          painter: _LandscapeAmbientPainter(vm, _ambient, night),
+        ))),
+      ]),
+    ));
+  }
+
+  List<Widget> _landscapePastries(GameplayViewModel vm, double w, double h) {
+    final items = <Product>[];
+    for (final p in Product.values.where((e) => e.isFood)) {
+      for (var i = 0; i < min(vm.stockOf(p), 3); i++) { items.add(p); }
+    }
+    return [
+      for (var i = 0; i < min(items.length, 9); i++)
+        Positioned(left: w * (.20 + (i % 5) * .058), top: h * (i < 5 ? .53 : .61),
+          child: ProductIcon(items[i], size: h * .075)),
+    ];
+  }
+
+  List<Widget> _landscapeTables(GameplayViewModel vm, double w, double h) {
+    final out = <Widget>[];
+    final spots = [(.64, .70), (.80, .70), (.72, .88), (.91, .84), (.56, .88), (.96, .66)];
+    for (var i = 0; i < vm.tableCount && i < spots.length; i++) {
+      final (x, y) = spots[i];
+      Customer? sitter;
+      for (final customer in vm.customers) {
+        if (customer.tableIndex == i && customer.state == CustState.seated) sitter = customer;
+      }
+      out.add(Positioned(left: w * x - h * .10, top: h * y - h * .27, width: h * .20, height: h * .27,
+        child: Image.asset('assets/scene/chair.png', fit: BoxFit.contain)));
+      if (sitter != null) {
+        out.add(Positioned(left: w * x - h * .13, top: h * y - h * .48, width: h * .26, height: h * .26,
+          child: WalkingSprite(variant: sitter.variant, size: h * .26, time: _time + sitter.id,
+            seated: true, hop: sitter.hop, angry: sitter.angry)));
+      }
+      out.add(Positioned(left: w * x - h * .11, top: h * y - h * .16, width: h * .22, height: h * .16,
+        child: Image.asset('assets/scene/table_${vm.clothStyle}.png', fit: BoxFit.fill)));
+      if (sitter != null && sitter.items.isNotEmpty) {
+        out.add(Positioned(left: w * x - h * .025, top: h * y - h * .20,
+          child: ProductIcon(sitter.items.first.product, size: h * .07)));
+      }
+    }
+    return out;
+  }
+
+  List<Widget> _landscapeCustomers(GameplayViewModel vm, double w, double h) {
+    final out = <Widget>[];
+    for (final c in vm.customers) {
+      if (c.state == CustState.seated) continue;
+      final x = w * (.53 + (c.y / Stage.h) * .39);
+      final y = h * (.53 + (c.x / Stage.w) * .24);
+      final size = h * .38;
+      out.add(Positioned(left: x - size / 2, top: y - size * .82, width: size, height: size,
+        child: WalkingSprite(variant: c.variant, size: size, time: _time + c.id,
+          phase: c.walkPhase, walking: c.isWalking, hop: c.hop, angry: c.angry)));
+      if (c.bubble != null && c.bubble!.isNotEmpty) {
+        out.add(Positioned(left: x - h * .14, top: y - size * .98, width: h * .28,
+          child: _SpeechBubble(text: c.bubble!)));
+      }
+    }
+    return out;
+  }
+
+  List<Widget> _landscapeOvens(GameplayViewModel vm, double w, double h) {
+    final out = <Widget>[];
+    for (var i = 0; i < vm.ovens.length; i++) {
+      final oven = vm.ovens[i];
+      if (oven.state == OvenState.idle) continue;
+      final ready = oven.state == OvenState.ready;
+      final burnt = oven.state == OvenState.burnt;
+      out.add(Positioned(left: w * .025, top: h * (.40 + i * .105), width: w * .13,
+        child: Container(padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(color: ready ? Colors.green.shade700 : Colors.black87,
+            borderRadius: BorderRadius.circular(9), border: Border.all(color: Colors.white38)),
+          child: Row(children: [
+            if (oven.item != null) ProductIcon(oven.item!, size: h * .07),
+            Expanded(child: Text(burnt ? 'GOSONG' : ready ? 'SIAP!' : 'MEMANGGANG',
+              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800))),
+          ]))));
+    }
+    return out;
   }
 
   // ---------------- dekor belakang ----------------
@@ -967,4 +1106,66 @@ class _MotePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MotePainter old) => old.st.s != st.s;
+}
+
+
+/// Dinding, jendela, lantai, dan counter digambar dalam bidang horizontal.
+class _LandscapeRoomPainter extends CustomPainter {
+  _LandscapeRoomPainter(this.vm, this.time, this.night) : super(repaint: time);
+  final GameplayViewModel vm;
+  final ValueNotifier<double> time;
+  final double night;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    final wall = Paint()..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
+      colors: [const Color(0xFFE7C99F), Color.lerp(const Color(0xFFC99B68), const Color(0xFF604536), night)!]).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, wall);
+    final floor = Path()..moveTo(0, h * .62)..lineTo(w, h * .62)..lineTo(w, h)..lineTo(0, h)..close();
+    canvas.drawPath(floor, Paint()..color = const Color(0xFF9B704D));
+    // Panel dinding dan jendela lebar.
+    final panel = Paint()..color = const Color(0xFF8B5E3C);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.59,h*.10,w*.22,h*.34), const Radius.circular(12)), panel);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.605,h*.12,w*.19,h*.30), const Radius.circular(8)),
+      Paint()..color = const Color(0xFF9CC6D0));
+    canvas.drawLine(Offset(w*.70,h*.12), Offset(w*.70,h*.42), Paint()..color=const Color(0xFF6C4932)..strokeWidth=5);
+    canvas.drawLine(Offset(w*.605,h*.27), Offset(w*.795,h*.27), Paint()..color=const Color(0xFF6C4932)..strokeWidth=5);
+    // Counter utama berbentuk panjang, dengan permukaan kayu.
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.14,h*.38,w*.43,h*.31), const Radius.circular(18)),
+      Paint()..color=const Color(0xFF65412D));
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w*.14,h*.37,w*.43,h*.07), const Radius.circular(12)),
+      Paint()..color=const Color(0xFFD7A36A));
+    canvas.drawRect(Rect.fromLTWH(w*.16,h*.47,w*.39,h*.19), Paint()..color=const Color(0xFF805337));
+    for (var i=0;i<5;i++) {
+      final x=w*(.18+i*.075);
+      canvas.drawLine(Offset(x,h*.49),Offset(x,h*.64),Paint()..color=const Color(0xFF5B3928)..strokeWidth=2);
+    }
+    // Garis ubin lantai.
+    final tile=Paint()..color=const Color(0xFF6F4E38)..strokeWidth=1;
+    for(var i=1;i<9;i++) canvas.drawLine(Offset(w*i/9,h*.64),Offset(w*i/9,h),tile);
+    for(var i=0;i<3;i++) canvas.drawLine(Offset(0,h*(.73+i*.09)),Offset(w,h*(.73+i*.09)),tile);
+  }
+  @override
+  bool shouldRepaint(covariant _LandscapeRoomPainter old) => old.night != night;
+}
+
+class _LandscapeAmbientPainter extends CustomPainter {
+  _LandscapeAmbientPainter(this.vm, this.time, this.night) : super(repaint: time);
+  final GameplayViewModel vm;
+  final ValueNotifier<double> time;
+  final double night;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final t=time.value;
+    for(var i=0;i<3;i++) {
+      final x=size.width*(.22+i*.27);
+      final y=size.height*(.08+sin(t*1.7+i)*.008);
+      final rect=Rect.fromCircle(center:Offset(x,y),radius:size.height*.13);
+      canvas.drawCircle(rect.center,rect.width/2,Paint()..shader=RadialGradient(colors:[const Color(0xFFFFD27A).withValues(alpha:.13+night*.08),Colors.transparent]).createShader(rect));
+    }
+    final vignette=Paint()..shader=RadialGradient(radius:1.15,colors:[Colors.transparent,Colors.black.withValues(alpha:.28)],stops:const [.65,1]).createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size,vignette);
+  }
+  @override
+  bool shouldRepaint(covariant _LandscapeAmbientPainter old) => old.night != night;
 }
