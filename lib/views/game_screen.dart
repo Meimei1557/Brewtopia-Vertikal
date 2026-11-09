@@ -14,6 +14,7 @@ import '../data/models/game_event.dart';
 import '../data/models/product.dart';
 import '../viewmodels/gameplay_view_model.dart';
 import 'widgets/cafe_scene.dart';
+import 'widgets/mockup_game_hud.dart';
 import 'widgets/craft_sheet.dart';
 import 'widgets/oven_sheet.dart';
 import 'widgets/product_icon.dart';
@@ -306,11 +307,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             child: Consumer<GameplayViewModel>(
               builder: (context, vm, _) => landscape
                   ? Column(children: [
-                      _TopBar(vm: vm, onShop: _openShop, onOven: _openOven),
+                      MockupTopBar(vm: vm),
                       const Spacer(),
                       _CoachBar(vm: vm),
                       _OrdersStrip(vm: vm, onItem: _onTicketItem),
-                      _BottomBar(vm: vm, onProduct: _onProduct, onShop: _openShop, onOven: _openOven),
+                      MockupBottomBar(onShop: _openShop, onOven: _openOven),
                     ])
                   : Column(children: [
                       _TopBar(vm: vm, onShop: _openShop, onOven: _openOven),
