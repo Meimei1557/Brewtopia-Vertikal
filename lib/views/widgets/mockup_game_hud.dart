@@ -66,7 +66,7 @@ class _MockupTopBarState extends State<MockupTopBar> {
     color: const Color(0xFF75452E), shape: const CircleBorder(),
     child: InkWell(onTap: onTap, customBorder: const CircleBorder(),
       child: Container(width: 42, height: 42,
-        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFFB77A4C, width: 2)),
+        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFFB77A4C), width: 2)),
         child: Icon(icon, color: const Color(0xFFFFEBD4), size: 23))),
   );
 }
