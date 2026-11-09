@@ -330,7 +330,7 @@ class _CafeSceneState extends State<CafeScene> with SingleTickerProviderStateMix
           painter: _LandscapeAmbientPainter(vm, _ambient, night),
         ))),
       ]),
-    );
+    ));
   }
 
   List<Widget> _landscapePastries(GameplayViewModel vm, double w, double h) {
