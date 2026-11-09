@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "players",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "city", "order": "ASCENDING" },
+        { "fieldPath": "totalEarned", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

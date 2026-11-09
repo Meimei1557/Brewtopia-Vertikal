@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "302225498559",
+    "project_id": "brewtopia-salsabila",
+    "storage_bucket": "brewtopia-salsabila.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302225498559:android:d1d8b603997604ed77810a",
+        "android_client_info": {
+          "package_name": "com.kel4.brewtopia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM78xWL9WLziDSPU3J5Y5sweBAAeR_arw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
