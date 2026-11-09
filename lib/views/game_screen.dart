@@ -293,19 +293,41 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(children: [
-        Positioned.fill(child: CafeScene(vm: _vm, onOvenTap: _openOven, onJukeboxTap: _jukebox)),
-        SafeArea(
-          child: Consumer<GameplayViewModel>(
-            builder: (context, vm, _) => Column(children: [
-              _TopBar(vm: vm, onShop: _openShop, onOven: _openOven),
-              _OrdersStrip(vm: vm, onItem: _onTicketItem),
-              const Spacer(),
-              _CoachBar(vm: vm),
-              _BottomBar(vm: vm, onProduct: _onProduct, onShop: _openShop, onOven: _openOven),
-            ]),
+      body: LayoutBuilder(builder: (context, constraints) {
+        final landscape = constraints.maxWidth > constraints.maxHeight;
+        final scene = landscape
+            ? Center(
+                child: RotatedBox(
+                  quarterTurns: 1,
+                  child: SizedBox(
+                    width: constraints.maxHeight,
+                    height: constraints.maxWidth,
+                    child: CafeScene(vm: _vm, onOvenTap: _openOven, onJukeboxTap: _jukebox),
+                  ),
+                ),
+              )
+            : CafeScene(vm: _vm, onOvenTap: _openOven, onJukeboxTap: _jukebox);
+        return Stack(children: [
+          Positioned.fill(child: scene),
+          SafeArea(
+            child: Consumer<GameplayViewModel>(
+              builder: (context, vm, _) => landscape
+                  ? Column(children: [
+                      _TopBar(vm: vm, onShop: _openShop, onOven: _openOven),
+                      const Spacer(),
+                      _CoachBar(vm: vm),
+                      _OrdersStrip(vm: vm, onItem: _onTicketItem),
+                      _BottomBar(vm: vm, onProduct: _onProduct, onShop: _openShop, onOven: _openOven),
+                    ])
+                  : Column(children: [
+                      _TopBar(vm: vm, onShop: _openShop, onOven: _openOven),
+                      _OrdersStrip(vm: vm, onItem: _onTicketItem),
+                      const Spacer(),
+                      _CoachBar(vm: vm),
+                      _BottomBar(vm: vm, onProduct: _onProduct, onShop: _openShop, onOven: _openOven),
+                    ]),
+            ),
           ),
-        ),
         Consumer<GameplayViewModel>(
           builder: (context, vm, _) => vm.bannerText == null
               ? const SizedBox.shrink()
