@@ -396,8 +396,6 @@ class _CafeSceneState extends State<CafeScene>
     );
   }
 
-  /// Komposisi khusus layar lebar: ruang kafe digambar ulang dalam koordinat
-  /// landscape, bukan memutar kanvas portrait lama.
   /// Komposisi khusus layar lebar memakai aset mockup horizontal dan
   /// koordinat ruang tersendiri; scene portrait tetap dipakai untuk portrait.
   Widget _buildLandscape(GameplayViewModel vm) {
@@ -468,7 +466,7 @@ class _CafeSceneState extends State<CafeScene>
                 ),
               ),
             ),
-            sprite('shelf_coffee', right: 0.025, top: 0.39, width: 0.105, height: 0.34),
+            sprite('shelf_coffee', right: 0.15, top: 0.31, width: 0.105, height: 0.32),
 
             // Barista berada di belakang counter; gender mengikuti pilihan pemain.
             Positioned(
@@ -504,7 +502,7 @@ class _CafeSceneState extends State<CafeScene>
             ..._landscapePastries(vm, w, h),
             // Oven berada tepat pada area sentuh di sisi kiri scene.
             sprite('oven_fireplace', left: 0.015, bottom: 0.16, width: 0.17, height: 0.27),
-            sprite('pastry_case', right: 0.145, top: 0.48, width: 0.11, height: 0.20),
+            sprite('pastry_case', left: 0.46, top: 0.49, width: 0.11, height: 0.20),
 
             if (vm.hasDecor(Decor.plantBig) || vm.hasDecor(Decor.plantSmall))
               sprite('plant_cluster', left: 0.63, top: 0.18, width: 0.15, height: 0.08),
